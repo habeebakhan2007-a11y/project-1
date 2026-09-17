@@ -1,0 +1,191 @@
+﻿@{
+    ViewData["Title"] = "PIA Portal - Dashboard";
+    string pno = ViewBag.PNo ?? "";
+    string name = ViewBag.FullName ?? "User";
+    string role = ViewBag.Role ?? "Employee";
+}
+
+<style>
+    .profile-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        margin-bottom: 24px;
+    }
+
+    .action-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s, box-shadow 0.2s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+        .action-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+    .icon-box {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        margin-bottom: 16px;
+    }
+
+    .bg-pia-light {
+        background: #e6f4ea;
+        color: #005A36;
+    }
+
+    .bg-blue-light {
+        background: #e8f0fe;
+        color: #1a73e8;
+    }
+
+    .bg-amber-light {
+        background: #fef7e0;
+        color: #b06000;
+    }
+
+    .bg-teal-light {
+        background: #e0f2f1;
+        color: #00796b;
+    }
+
+    .btn-pia {
+        background-color: #005A36;
+        color: white;
+        border-radius: 8px;
+        font-weight: 500;
+    }
+
+        .btn-pia:hover {
+            background-color: #004227;
+            color: white;
+        }
+</style>
+
+<div class="container my-4">
+    <!-- Header Banner (Red Logout Removed) -->
+    <div class="profile-card d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle bg-pia-light p-3 text-center" style="width: 60px; height: 60px;">
+                <i class="fa-solid fa-user-gear fs-3"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold mb-1 text-dark">@name</h4>
+                <div class="text-muted small">
+                    <span class="badge bg-secondary me-2">@role</span>
+                    <span>P.No: <strong>@pno</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Access Services -->
+    <h5 class="fw-bold mb-3 text-dark">Quick Access Services</h5>
+    <div class="row g-4">
+
+        <!-- 1 & 2. Employee Services -->
+        @if (role == "Employee")
+        {
+            <div class="col-md-6">
+                <div class="action-card">
+                    <div>
+                        <div class="icon-box bg-pia-light">
+                            <i class="fa-solid fa-plane-departure"></i>
+                        </div>
+                        <h5 class="fw-bold">Apply for Leave</h5>
+                        <p class="text-muted small">Submit leave applications for annual, casual, or medical requests.</p>
+                    </div>
+                    <a asp-action="ApplyLeave" class="btn btn-pia w-100 mt-3">Apply Now</a>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="action-card">
+                    <div>
+                        <div class="icon-box bg-blue-light">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </div>
+                        <h5 class="fw-bold">My Leave Applications</h5>
+                        <p class="text-muted small">Check real-time status and remarks for your submitted applications.</p>
+                    </div>
+                    <a asp-action="MyLeaves" class="btn btn-outline-primary w-100 mt-3">View Applications</a>
+                </div>
+            </div>
+        }
+
+        <!-- 3, 4 & 5. Admin Services -->
+        @if (role == "Admin")
+        {
+            <div class="col-md-4">
+                <div class="action-card border border-warning">
+                    <div>
+                        <div class="icon-box bg-amber-light">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </div>
+                        <h5 class="fw-bold">Admin Leave Queue</h5>
+                        <p class="text-muted small">Review incoming leave requests and forward them to GM/DGM.</p>
+                    </div>
+                    <a asp-action="AdminLeaveQueue" class="btn btn-warning w-100 mt-3 fw-bold">Manage Requests</a>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="action-card border border-info">
+                    <div>
+                        <div class="icon-box bg-blue-light">
+                            <i class="fa-solid fa-users-gear"></i>
+                        </div>
+                        <h5 class="fw-bold">User Management</h5>
+                        <p class="text-muted small">Add new employees/managers or delete existing system users.</p>
+                    </div>
+                    <a asp-action="ManageUsers" class="btn btn-info w-100 mt-3 fw-bold text-white">Manage Users</a>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="action-card border border-success">
+                    <div>
+                        <div class="icon-box bg-pia-light">
+                            <i class="fa-solid fa-sliders"></i>
+                        </div>
+                        <h5 class="fw-bold">Assign Leave Balance</h5>
+                        <p class="text-muted small">View all employees and update or assign their yearly leave quotas.</p>
+                    </div>
+                    <!-- Redirects to AssignLeaveBalances view -->
+                    <a asp-action="AssignLeaveBalances" class="btn btn-pia w-100 mt-3 fw-bold">Assign Balances</a>
+                </div>
+            </div>
+        }
+
+        <!-- 6. Executive Approvals (GM / DGM Only) -->
+        @if (role == "General Manager" || role == "Deputy GM")
+        {
+            <div class="col-md-6">
+                <div class="action-card border border-success">
+                    <div>
+                        <div class="icon-box bg-pia-light">
+                            <i class="fa-solid fa-file-signature"></i>
+                        </div>
+                        <h5 class="fw-bold">Approvals Queue</h5>
+                        <p class="text-muted small">Approve or reject leave applications assigned to your division.</p>
+                    </div>
+                    <a asp-action="ExecutiveLeaveQueue" class="btn btn-success w-100 mt-3 fw-bold">Pending Approvals</a>
+                </div>
+            </div>
+        }
+
+    </div>
+</div>

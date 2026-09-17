@@ -1,0 +1,158 @@
+﻿@model List<project_1.Models.UserViewModel>
+
+@{
+    ViewData["Title"] = "Assign Leave Balances";
+}
+<div class="container py-5">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+            <i class="fa-solid fa-circle-check me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+            <i class="fa-solid fa-circle-exclamation me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow border-0 rounded-4 overflow-hidden">
+        <!-- Header -->
+        <div class="card-header bg-gradient bg-dark text-white py-3 px-4 d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="mb-0 fw-bold">
+                    <i class="fa-solid fa-sliders me-2 text-warning"></i> Assign Leave Balances
+                </h5>
+                <small class="text-white-50">Manage and allocate employee remaining leave quotas</small>
+            </div>
+            <a asp-controller="Account" asp-action="Dashboard" class="btn btn-outline-light btn-sm px-3 rounded-pill fw-semibold shadow-sm">
+                <i class="fa-solid fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <!-- Table Body -->
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle text-nowrap">
+                    <thead class="table-light text-uppercase fs-7 text-secondary border-bottom">
+                        <tr>
+                            <th class="py-3 ps-4">P.No</th>
+                            <th class="py-3">Full Name</th>
+                            <th class="py-3">Email</th>
+                            <th class="py-3">Role</th>
+                            <th class="py-3 text-center">Casual Bal.</th>
+                            <th class="py-3 text-center">Medical Bal.</th>
+                            <th class="py-3 text-center">Annual Bal.</th>
+                            <th class="py-3 text-center pe-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var u in Model)
+                            {
+                                <tr>
+                                    <td class="fw-bold ps-4 text-dark">@u.PNo</td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">@u.FullName</div>
+                                    </td>
+                                    <td class="text-muted">@(string.IsNullOrEmpty(u.Email) ? "-" : u.Email)</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border px-2 py-1 rounded-pill fw-normal">@u.Role</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle px-2.5 py-1.5 rounded-2 fw-bold">@u.CasualQuota Days</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-2.5 py-1.5 rounded-2 fw-bold">@u.MedicalQuota Days</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle px-2.5 py-1.5 rounded-2 fw-bold">@u.AnnualQuota Days</span>
+                                    </td>
+                                    <td class="text-center pe-4">
+                                        <button type="button" class="btn btn-warning btn-sm text-dark fw-bold px-3 rounded-pill shadow-sm hover-scale" title="Assign Leave Balance"
+                                                data-bs-toggle="modal" data-bs-target="#assignLeaveModal"
+                                                onclick="assignLeave('@u.PNo', '@u.FullName', '@u.CasualQuota', '@u.MedicalQuota', '@u.AnnualQuota')">
+                                            <i class="fa-solid fa-sliders me-1"></i> Assign Quota
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-5">
+                                    <i class="fa-solid fa-folder-open fs-2 mb-2 d-block text-black-50"></i>
+                                    No employees found in the system.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div><!-- ASSIGN LEAVE BALANCE MODAL --><div class="modal fade" id="assignLeaveModal" tabindex="-1" aria-hidden="true">
+<div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+        <div class="modal-header bg-warning text-dark px-4 py-3">
+            <h5 class="modal-title fw-bold">
+                <i class="fa-solid fa-sliders me-2"></i> Assign Quota - <span id="assignUserName" class="text-decoration-underline"></span>
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form asp-controller="Account" asp-action="AssignLeaveBalance" method="post">
+            @Html.AntiForgeryToken()
+            <div class="modal-body p-4">
+                <input type="hidden" name="pno" id="assignPNo" value="" />
+
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-secondary small text-uppercase">Casual Leaves</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fa-solid fa-calendar-days text-info"></i></span>
+                            <input type="number" id="assignCasual" name="casualQuota" class="form-control" min="0" required />
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-secondary small text-uppercase">Medical Leaves</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fa-solid fa-notes-medical text-warning"></i></span>
+                            <input type="number" id="assignMedical" name="medicalQuota" class="form-control" min="0" required />
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold text-secondary small text-uppercase">Annual Leaves</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="fa-solid fa-calendar-check text-success"></i></span>
+                            <input type="number" id="assignAnnual" name="annualQuota" class="form-control" min="0" required />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light px-4 py-3">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-warning text-dark fw-bold px-4 rounded-pill shadow-sm">Save Quotas</button>
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+
+@section Scripts {
+    <script>
+        function assignLeave(pno, name, casual, medical, annual) {
+            document.getElementById('assignPNo').value = pno;
+            document.getElementById('assignUserName').innerText = name;
+
+            document.getElementById('assignCasual').value = (casual !== undefined && casual !== '') ? casual : 5;
+            document.getElementById('assignMedical').value = (medical !== undefined && medical !== '') ? medical : 5;
+            document.getElementById('assignAnnual').value = (annual !== undefined && annual !== '') ? annual : 5;
+        }
+    </script>
+}

@@ -1,0 +1,87 @@
+﻿@model List<project_1.Models.LeaveApplication>
+
+@{
+    ViewData["Title"] = "My Leaves";
+}
+
+<div class="card shadow p-4 border-0">
+    <h3 class="text-success fw-bold mb-4">
+        <i class="bi bi-calendar-check"></i> My Leave Applications
+    </h3>
+
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Type</th>
+                    <th>Dates</th>
+                    <th>Days</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Rejection Reason</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        // Inclusive days calculation: (EndDate - StartDate) + 1
+                        int totalDays = (item.EndDate - item.StartDate).Days + 1;
+
+                        <tr>
+                            <td><strong>@item.LeaveType</strong></td>
+                            <td>
+                                @item.StartDate.ToString("dd/MM/yyyy") - @item.EndDate.ToString("dd/MM/yyyy")
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border">@totalDays</span>
+                            </td>
+                            <td>@(string.IsNullOrEmpty(item.Reason) ? "-" : item.Reason)</td>
+                            <td>
+                                @if (item.Status == "Pending Admin")
+                                {
+                                    <span class="badge bg-info text-dark">Pending Admin</span>
+                                }
+                                else if (item.Status == "Forwarded to GM")
+                                {
+                                    <span class="badge bg-warning text-dark">Forwarded to GM</span>
+                                }
+                                else if (item.Status == "Approved")
+                                {
+                                    <span class="badge bg-success">Approved</span>
+                                }
+                                else if (item.Status == "Rejected")
+                                {
+                                    <span class="badge bg-danger">Rejected</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@item.Status</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.Status == "Rejected")
+                                {
+                                    <span class="text-danger fw-semibold">
+                                        @(string.IsNullOrEmpty(item.AdminRemarks) ? (string.IsNullOrEmpty(item.ExecutiveRemarks) ? "No reason provided" : item.ExecutiveRemarks) : item.AdminRemarks)
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">No leave applications found.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

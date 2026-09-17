@@ -1,0 +1,174 @@
+﻿@model project_1.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Employee Portal Login";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<style>
+    /* Full Page Background with Clean Aviation Feel */
+    body {
+        background: linear-gradient(rgba(0, 35, 20, 0.85), rgba(0, 20, 10, 0.92)), url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1920&q=80') no-repeat center center fixed;
+        background-size: cover;
+        min-height: 100vh;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    /* Modern Glass Card */
+    .login-wrapper {
+        min-height: calc(100vh - 120px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .corporate-card {
+        background: #ffffff;
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+        width: 100%;
+        max-width: 440px;
+    }
+
+    .brand-header {
+        background-color: #004d2e;
+        border-bottom: 4px solid #D4AF37;
+        padding: 2.2rem 1.5rem 1.8rem;
+        text-align: center;
+        color: #ffffff;
+    }
+
+    .brand-logo-icon {
+        font-size: 2.2rem;
+        color: #D4AF37;
+        margin-bottom: 0.6rem;
+    }
+
+    .brand-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        margin: 0;
+    }
+
+    .brand-subtitle {
+        font-size: 0.82rem;
+        color: #c2e2d3;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-top: 4px;
+    }
+
+    /* Floating Labels & Inputs */
+    .form-floating > label {
+        color: #6c757d;
+        padding-left: 2.8rem;
+    }
+
+    .input-group-text-custom {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        color: #004d2e;
+        font-size: 1.1rem;
+    }
+
+    .form-floating > .form-control {
+        padding-left: 2.8rem;
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        height: calc(3.5rem + 2px);
+    }
+
+        .form-floating > .form-control:focus {
+            border-color: #004d2e;
+            box-shadow: 0 0 0 0.2rem rgba(0, 77, 46, 0.15);
+        }
+
+    /* Corporate Button */
+    .btn-pia-corporate {
+        background-color: #004d2e;
+        color: #ffffff;
+        font-weight: 600;
+        font-size: 1rem;
+        padding: 0.8rem;
+        border-radius: 8px;
+        border: 1px solid #00331f;
+        transition: all 0.2s ease-in-out;
+    }
+
+        .btn-pia-corporate:hover {
+            background-color: #D4AF37;
+            color: #00331f;
+            border-color: #b89628;
+        }
+
+    .card-footer-custom {
+        background-color: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        padding: 0.9rem;
+        font-size: 0.78rem;
+        color: #6c757d;
+        text-align: center;
+    }
+</style>
+
+<div class="login-wrapper">
+    <div class="corporate-card">
+        <!-- Header -->
+        <div class="brand-header">
+            <div class="brand-logo-icon">
+                <i class="fa-solid fa-plane-departure"></i>
+            </div>
+            <h1 class="brand-title">PIA EMPLOYEE PORTAL</h1>
+            <div class="brand-subtitle">Pakistan International Airlines</div>
+        </div>
+
+        <!-- Body -->
+        <div class="card-body p-4 p-sm-4">
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger d-flex align-items-center py-2 px-3 small rounded-2 mb-3" role="alert">
+                    <i class="fa-solid fa-triangle-exclamation me-2"></i>
+                    <div>@ViewBag.Error</div>
+                </div>
+            }
+
+            <form asp-action="Login" method="post">
+                <!-- P.No Field -->
+                <div class="mb-3 position-relative">
+                    <span class="input-group-text-custom"><i class="fa-solid fa-id-badge"></i></span>
+                    <div class="form-floating">
+                        <input asp-for="PNo" class="form-control" id="pnoInput" placeholder="P-1001" required />
+                        <label for="pnoInput">Personal Number (e.g. P-1001)</label>
+                    </div>
+                    <span asp-validation-for="PNo" class="text-danger small"></span>
+                </div>
+
+                <!-- Password Field -->
+                <div class="mb-4 position-relative">
+                    <span class="input-group-text-custom"><i class="fa-solid fa-lock"></i></span>
+                    <div class="form-floating">
+                        <input asp-for="Password" class="form-control" id="passwordInput" type="password" placeholder="Password" required />
+                        <label for="passwordInput">Password</label>
+                    </div>
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-pia-corporate w-100 shadow-sm mb-2">
+                    Sign In to Portal <i class="fa-solid fa-arrow-right-to-bracket ms-1"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer-custom">
+            <i class="fa-solid fa-shield-halved me-1 text-success"></i> Secure Enterprise Access | IT Division
+        </div>
+    </div>
+</div>

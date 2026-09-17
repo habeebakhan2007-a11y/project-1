@@ -1,0 +1,229 @@
+﻿@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@using Microsoft.AspNetCore.Http
+
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+
+    // Get logged-in user role from Session
+    var userRole = Context.Session.GetString("Role");
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - PIA Employee Portal</title>
+    <!-- Bootstrap 5 & FontAwesome -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+            :root {
+                --pia-green: #005A36;
+                --pia-dark: #003822;
+                --pia-gold: #D4AF37;
+                --pia-light-bg: #F8F9FA;
+            }
+
+            body {
+                background-color: #F3F4F6;
+                font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+                color: #2D3748;
+            }
+
+            /* Top Navbar */
+            .navbar-pia {
+                background: linear-gradient(135deg, var(--pia-dark) 0%, var(--pia-green) 100%);
+                border-bottom: 3px solid var(--pia-gold);
+            }
+
+                .navbar-pia .navbar-brand {
+                    font-weight: 700;
+                    font-size: 1.25rem;
+                    color: #FFFFFF !important;
+                    letter-spacing: 0.3px;
+                }
+
+                .navbar-pia .nav-link {
+                    color: rgba(255, 255, 255, 0.85) !important;
+                    font-weight: 500;
+                    padding: 8px 16px !important;
+                    border-radius: 8px;
+                    transition: all 0.2s ease;
+                }
+
+                    .navbar-pia .nav-link:hover,
+                    .navbar-pia .nav-link.active {
+                        color: #FFFFFF !important;
+                        background-color: rgba(255, 255, 255, 0.15);
+                    }
+
+            /* User Header Card */
+            .profile-card {
+                background: #FFFFFF;
+                border-radius: 16px;
+                padding: 20px 28px;
+                border: 1px solid #E5E7EB;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            }
+
+            /* Action Cards */
+            .action-card {
+                background: #FFFFFF;
+                border-radius: 16px;
+                padding: 24px;
+                border: 1px solid #E5E7EB;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+                transition: all 0.25s ease;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+            }
+
+                .action-card:hover {
+                    transform: translateY(-4px);
+                    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+                    border-color: #CBD5E1;
+                }
+
+            .icon-box {
+                width: 48px;
+                height: 48px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.35rem;
+                margin-bottom: 16px;
+            }
+
+            /* Standard Buttons */
+            .btn-pia-primary {
+                background-color: var(--pia-green);
+                color: #FFFFFF;
+                border: none;
+                border-radius: 10px;
+                font-weight: 600;
+                padding: 10px 18px;
+                transition: all 0.2s ease;
+            }
+
+                .btn-pia-primary:hover {
+                    background-color: var(--pia-dark);
+                    color: var(--pia-gold);
+                }
+
+            /* Footer */
+            .footer-pia {
+                background-color: var(--pia-dark);
+                color: rgba(255, 255, 255, 0.7);
+                border-top: 3px solid var(--pia-gold);
+                font-size: 0.875rem;
+            }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+    <nav class="navbar navbar-expand-lg navbar-pia shadow-sm py-2">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" asp-controller="Account" asp-action="Dashboard">
+                <i class="fa-solid fa-plane-departure text-warning"></i>
+                <span>PIA Employee Portal</span>
+            </a>
+
+            @if (Context.Session.GetString("PNo") != null)
+            {
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="collapse navbar-collapse" id="navbarContent">
+                    <ul class="navbar-nav me-auto ms-lg-4 gap-1">
+
+                        <!-- Common Link for All Logged-in Users -->
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Account" && currentAction == "Dashboard" ? "active" : "")"
+                               asp-controller="Account" asp-action="Dashboard">
+                                <i class="fa-solid fa-house-chimney me-1"></i> Dashboard
+                            </a>
+                        </li>
+
+                        <!-- ADMIN ONLY LINKS -->
+                        @if (userRole == "Admin")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(currentController == "Account" && currentAction == "AdminLeaveQueue" ? "active" : "")"
+                                   asp-controller="Account" asp-action="AdminLeaveQueue">
+                                    <i class="fa-solid fa-clipboard-check me-1"></i> Manage Requests
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentController == "Account" && currentAction == "ManageUsers" ? "active" : "")"
+                                   asp-controller="Account" asp-action="ManageUsers">
+                                    <i class="fa-solid fa-users-gear me-1"></i> User Management
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentController == "Account" && currentAction == "AssignLeaveBalances" ? "active" : "")"
+                                   asp-controller="Account" asp-action="AssignLeaveBalances">
+                                    <i class="fa-solid fa-sliders me-1"></i> Assign Balances
+                                </a>
+                            </li>
+                        }
+
+                        <!-- EMPLOYEE ONLY LINKS -->
+                        @if (userRole == "Employee")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(currentController == "Account" && currentAction == "ApplyLeave" ? "active" : "")"
+                                   asp-controller="Account" asp-action="ApplyLeave">
+                                    <i class="fa-solid fa-pen-to-square me-1"></i> Apply Leave
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link @(currentController == "Account" && currentAction == "MyLeaves" ? "active" : "")"
+                                   asp-controller="Account" asp-action="MyLeaves">
+                                    <i class="fa-solid fa-clock-rotate-left me-1"></i> My History
+                                </a>
+                            </li>
+                        }
+
+                        <!-- GM & DEPUTY GM APPROVER LINKS -->
+                        @if (userRole == "General Manager" || userRole == "Deputy GM")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link @(currentController == "Account" && currentAction == "ExecutiveLeaveQueue" ? "active" : "")"
+                                   asp-controller="Account" asp-action="ExecutiveLeaveQueue">
+                                    <i class="fa-solid fa-hourglass-half me-1"></i> Pending Approvals
+                                </a>
+                            </li>
+                        }
+
+                    </ul>
+
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline ms-auto">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-light btn-sm px-3 rounded-pill fw-semibold">
+                            <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
+                        </button>
+                    </form>
+                </div>
+            }
+        </div>
+    </nav>
+
+    <div class="container my-4 flex-grow-1">
+        @RenderBody()
+    </div>
+
+    <footer class="footer-pia text-center py-3 mt-auto">
+        <div class="container">
+            <small>&copy; 2026 Pakistan International Airlines. IT Infrastructure Department.</small>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

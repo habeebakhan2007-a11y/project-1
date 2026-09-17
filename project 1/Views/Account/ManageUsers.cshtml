@@ -1,0 +1,316 @@
+﻿@model List<project_1.Models.UserViewModel>
+
+@{
+    ViewData["Title"] = "System Users List";
+}
+
+<div class="container py-5">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+            <i class="fa-solid fa-circle-check me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+            <i class="fa-solid fa-circle-exclamation me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="card shadow border-0 rounded-4 overflow-hidden">
+        <!-- Header (Matched with Assign Leave Balances Style) -->
+        <div class="card-header bg-gradient bg-dark text-white py-3 px-4 d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="mb-0 fw-bold">
+                    <i class="fa-solid fa-users-gear me-2 text-warning"></i> System Users List
+                </h5>
+                <small class="text-white-50">Manage system users, roles, and account access</small>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-warning btn-sm text-dark fw-bold px-3 rounded-pill shadow-sm" data-bs-toggle="modal" data-bs-target="#addUserModal">
+                    <i class="fa-solid fa-user-plus me-1"></i> Add New User
+                </button>
+                <a asp-controller="Account" asp-action="Dashboard" class="btn btn-outline-light btn-sm px-3 rounded-pill fw-semibold shadow-sm">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Table Body -->
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle text-nowrap">
+                    <thead class="table-light text-uppercase fs-7 text-secondary border-bottom">
+                        <tr>
+                            <th class="py-3 ps-4">P.No</th>
+                            <th class="py-3">Full Name</th>
+                            <th class="py-3">Email</th>
+                            <th class="py-3">Role</th>
+                            <th class="py-3 text-center pe-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var u in Model)
+                            {
+                                <tr>
+                                    <td class="fw-bold ps-4 text-dark">@u.PNo</td>
+                                    <td>
+                                        <div class="fw-semibold text-dark">@u.FullName</div>
+                                    </td>
+                                    <td class="text-muted">@(string.IsNullOrEmpty(u.Email) ? "-" : u.Email)</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark border px-2.5 py-1.5 rounded-pill fw-normal">@u.Role</span>
+                                    </td>
+                                    <td class="text-center pe-4">
+                                        <div class="d-flex justify-content-center gap-1">
+                                            <!-- View User Button -->
+                                            <button type="button" class="btn btn-outline-info btn-sm rounded-2 px-2" title="View Details"
+                                                    data-bs-toggle="modal" data-bs-target="#viewUserModal"
+                                                    onclick="viewUser('@u.PNo', '@u.FullName', '@(u.Email ?? "-")', '@u.Role')">
+                                                <i class="fa-solid fa-eye"></i>
+                                            </button>
+
+                                            <!-- Edit User Button -->
+                                            <button type="button" class="btn btn-outline-primary btn-sm rounded-2 px-2" title="Edit User"
+                                                    data-bs-toggle="modal" data-bs-target="#editUserModal"
+                                                    onclick="editUser('@u.PNo', '@u.FullName', '@u.Email', '@u.Role')">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            </button>
+
+                                            <!-- Assign Leave Balance Button (Only for Employee) -->
+                                            @if (u.Role == "Employee")
+                                            {
+                                                <button type="button" class="btn btn-outline-warning text-dark btn-sm rounded-2 px-2" title="Assign Leave Balance"
+                                                        data-bs-toggle="modal" data-bs-target="#assignLeaveModal"
+                                                        onclick="assignLeave('@u.PNo', '@u.FullName', '@u.CasualQuota', '@u.MedicalQuota', '@u.AnnualQuota')">
+                                                    <i class="fa-solid fa-sliders"></i>
+                                                </button>
+                                            }
+
+                                            <!-- Delete User Form -->
+                                            <form asp-controller="Account" asp-action="DeleteUser" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this user?');">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="pno" value="@u.PNo" />
+                                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-2 px-2" title="Delete User">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-5">
+                                    <i class="fa-solid fa-folder-open fs-2 mb-2 d-block text-black-50"></i>
+                                    No users found in the system.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 1. ADD USER MODAL -->
+<div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header bg-dark text-white px-4 py-3">
+                <h5 class="modal-title fw-bold" id="addUserModalLabel">
+                    <i class="fa-solid fa-user-plus me-2 text-warning"></i> Add New User
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-controller="Account" asp-action="AddUser" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-secondary small text-uppercase">P.No</label>
+                            <input type="text" name="pno" class="form-control" required placeholder="e.g. 5001" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-secondary small text-uppercase">Full Name</label>
+                            <input type="text" name="fullName" class="form-control" required placeholder="e.g. Ali Ahmed" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-secondary small text-uppercase">Email Address</label>
+                            <input type="email" name="email" class="form-control" required placeholder="e.g. user@domain.com" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-secondary small text-uppercase">Password</label>
+                            <input type="password" name="password" class="form-control" required placeholder="Enter password" />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-secondary small text-uppercase">Role</label>
+                            <select name="role" class="form-select" required>
+                                <option value="">Select Role</option>
+                                <option value="Employee">Employee</option>
+                                
+                                <option value="General Manager">General Manager</option>
+                                <option value="Deputy GM">Deputy GM</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3">
+                    <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning text-dark fw-bold px-4 rounded-pill shadow-sm">Save User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 2. ASSIGN LEAVE BALANCE MODAL -->
+<div class="modal fade" id="assignLeaveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header bg-warning text-dark px-4 py-3">
+                <h5 class="modal-title fw-bold">
+                    <i class="fa-solid fa-sliders me-2"></i> Assign Leave Quota - <span id="assignUserName"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-controller="Account" asp-action="AssignLeaveBalance" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body p-4">
+                    <input type="hidden" name="pno" id="assignPNo" value="" />
+
+                    <div class="row g-3">
+                        <div class="col-4">
+                            <label class="form-label fw-bold small text-secondary text-uppercase">Casual Leaves</label>
+                            <input type="number" id="assignCasual" name="casualQuota" class="form-control" min="0" required />
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label fw-bold small text-secondary text-uppercase">Medical Leaves</label>
+                            <input type="number" id="assignMedical" name="medicalQuota" class="form-control" min="0" required />
+                        </div>
+                        <div class="col-4">
+                            <label class="form-label fw-bold small text-secondary text-uppercase">Annual Leaves</label>
+                            <input type="number" id="assignAnnual" name="annualQuota" class="form-control" min="0" required />
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3">
+                    <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning text-dark fw-bold px-4 rounded-pill shadow-sm">Save Quotas</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 3. EDIT USER MODAL -->
+<div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header bg-dark text-white px-4 py-3">
+                <h5 class="modal-title fw-bold">
+                    <i class="fa-solid fa-user-pen me-2 text-warning"></i> Edit User Information
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-controller="Account" asp-action="EditUser" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-body p-4">
+                    <input type="hidden" name="pno" id="editPNo" />
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-secondary small text-uppercase">Full Name</label>
+                            <input type="text" name="fullName" id="editFullName" class="form-control" required />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-secondary small text-uppercase">Email Address</label>
+                            <input type="email" name="email" id="editEmail" class="form-control" required />
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold text-secondary small text-uppercase">Role</label>
+                            <select name="role" id="editRole" class="form-select" required>
+                                <option value="Employee">Employee</option>
+                                <option value="Admin">Admin</option>
+                                <option value="General Manager">General Manager</option>
+                                <option value="Deputy GM">Deputy GM</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3">
+                    <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning text-dark fw-bold px-4 rounded-pill shadow-sm">Update User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 4. VIEW USER DETAILS MODAL -->
+<div class="modal fade" id="viewUserModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header bg-dark text-white px-4 py-3">
+                <h5 class="modal-title fw-bold">
+                    <i class="fa-solid fa-address-card me-2 text-info"></i> User Profile Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <strong class="text-secondary">P.No:</strong> <span id="viewPNo" class="fw-bold text-dark"></span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <strong class="text-secondary">Full Name:</strong> <span id="viewFullName" class="fw-bold text-dark"></span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <strong class="text-secondary">Email Address:</strong> <span id="viewEmail" class="text-muted"></span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                        <strong class="text-secondary">System Role:</strong> <span id="viewRole" class="badge bg-light text-dark border px-3 py-1 rounded-pill"></span>
+                    </li>
+                </ul>
+            </div>
+            <div class="modal-footer bg-light px-4 py-3">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function assignLeave(pno, name, casual, medical, annual) {
+            document.getElementById('assignPNo').value = pno;
+            document.getElementById('assignUserName').innerText = name;
+
+            document.getElementById('assignCasual').value = (casual !== undefined && casual !== '') ? casual : 5;
+            document.getElementById('assignMedical').value = (medical !== undefined && medical !== '') ? medical : 5;
+            document.getElementById('assignAnnual').value = (annual !== undefined && annual !== '') ? annual : 5;
+        }
+
+        function editUser(pno, name, email, role) {
+            document.getElementById('editPNo').value = pno;
+            document.getElementById('editFullName').value = name;
+            document.getElementById('editEmail').value = email;
+            document.getElementById('editRole').value = role;
+        }
+
+        function viewUser(pno, name, email, role) {
+            document.getElementById('viewPNo').innerText = pno;
+            document.getElementById('viewFullName').innerText = name;
+            document.getElementById('viewEmail').innerText = email;
+            document.getElementById('viewRole').innerText = role;
+        }
+    </script>
+}
